@@ -1,6 +1,3 @@
-Here’s a README in Markdown format for the EV3 Python project:
-
-```markdown
 # EV3 Pixy2 Object Detection and API Communication
 
 This project allows an EV3 robot to detect objects using a Pixy2 camera, process the detected data, and send it to a remote API endpoint. The robot interacts with a motor and touch sensor while sending object detection data in JSON format.
@@ -38,11 +35,10 @@ This project allows an EV3 robot to detect objects using a Pixy2 camera, process
    
    ```bash
    git clone <repository-url>
-   ```
 
-2. Install the required dependencies (Pybricks MicroPython libraries and Pixy2 library for EV3).
 
-3. Flash the firmware to the EV3 Brick and transfer the script to the robot.
+- Install the required dependencies (Pybricks MicroPython libraries and Pixy2 library for EV3).
+- Flash the firmware to the EV3 Brick and transfer the script to the robot.
 
 ## Code Explanation
 
@@ -53,7 +49,7 @@ The script initializes the following:
 - **EV3 Brick**: Sets up the speaker volume and beeps to signify the start.
 - **Pixy2 Camera**: Initializes the Pixy2 camera connected to port 4 and retrieves its version and frame resolution.
 - **Motor and Touch Sensor**: Initializes a motor on Port A and a touch sensor on Port 1. The motor speed is controlled by the touch sensor state.
-  
+
 ### Main Loop
 
 - **Pixy2 Data**: The `read_pixy_data` function retrieves the signature, x/y coordinates, width, and height of the detected object from the Pixy2 camera.
@@ -76,19 +72,9 @@ The script initializes the following:
 
 1. Upload the script to the EV3 Brick.
 2. Run the script on the EV3 Brick:
-   
+
    ```bash
    python ev3_pixy2.py
-   ```
 
 3. The robot will start detecting objects with the Pixy2 camera and send data to the server.
-
-4. To stop the program, press the **center button** on the EV3.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
-This README provides a clear overview of the project, its functionality, and how to set up and use it with the EV3 and Pixy2 camera.
-
+4. To stop the program, press the center button on the EV3.
