@@ -12,7 +12,7 @@ static bool  run_flag = true;
 
 
 // Backend URL
-const char* backend_url = "http://your-backend-url/receive_data";  // Replace with your backend URL
+const char* backend_url = "http://localhost:5000/json";  // Replace with your backend URL
 
 
 
