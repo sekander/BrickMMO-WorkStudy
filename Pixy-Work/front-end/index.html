@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Video</title>
+
+     <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+    <script>
+        // Function to fetch processed JSON data from Flask backend
+        function fetchProcessedJsonData() {
+            fetch('/get_json', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Processed JSON Data:', data);
+                renderOnCanvas(data);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        }
+
+        // Function to render the processed data on the canvas
+        function renderOnCanvas(data) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Clear the canvas before drawing
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+            // Draw a rectangle based on the received JSON data
+            const { x, y, w, h } = data;
+            ctx.fillStyle = 'rgba(0, 128, 255, 0.5)';
+            ctx.fillRect(x, y, w, h);
+
+            // Optionally add signature or other text
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.fillText('Signature: ' + data.signature, 10, canvas.height - 10);
+        }
+
+	// Call the fetch function every 1000 milliseconds (1 second)
+        setInterval(fetchProcessedJsonData, 1000);
+
+    </script>
+</head>
+<body>
+    <h1>Playing Video</h1>
+
+
+    <!-- Canvas to render the data -->
+    <canvas id="canvas" width="640" height="480"></canvas>
+
+
+    <!-- URL of the video from Flask API 
+    <video width="640" height="480" controls>
+        <source src="http://localhost:5000/video" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    -->
+</body>
+</html>
+

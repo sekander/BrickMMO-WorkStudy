@@ -1,9 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file, Response
 import cv2
 import numpy as np
 import json
+import os
 
 app = Flask(__name__)
+
+# Global variable to store the processed JSON data
+processed_data = {}
 
 @app.route('/')
 def home():
@@ -53,6 +57,13 @@ def handle_json():
             print("Original Points Signature:", sig, "X:", j_x, "Y:", j_y, "Width:", j_w, "Height:", j_h)
             print("New Matrix applied to Original Points Signature:", sig, "X:", u_x, "Y:", u_y, "Width:", j_w, "Height:", j_h)
 
+              # For now, we're just storing the received data as is
+            processed_data['signature'] = sig
+            processed_data['x'] = u_x
+            processed_data['y'] = u_y
+            processed_data['w'] = j_w
+            processed_data['h'] = j_h
+
             return jsonify({
                 "message": "PIXY JSON received successfully",
                 "signature" : sig,
@@ -78,8 +89,22 @@ def handle_json():
             "message": "OTHER JSON received successfully",
         }), 200
 
-    
 
+@app.route('/get_json', methods=['GET'])
+def get_json():
+    # Return the processed JSON data
+    if processed_data:
+        return jsonify(processed_data), 200
+    else:
+        return jsonify({
+            "message": "No data available"
+        }), 404
+
+# Endpoint to serve the MP4 video file
+@app.route('/video')
+def video():
+    video_path = os.path.join(os.getcwd(), 'output.mp4')
+    return send_file(video_path, mimetype='video/mp4')
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
