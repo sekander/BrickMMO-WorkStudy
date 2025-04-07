@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteRule ^json$ index.php?route=json [L]
+RewriteRule ^get_json$ index.php?route=get_json [L]

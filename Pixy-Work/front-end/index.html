@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Play Video</title>
+    <title>Fetch and Print JSON Data</title>
 
-     <style>
+    <style>
         canvas {
             border: 1px solid black;
         }
@@ -13,58 +13,70 @@
     <script>
         // Function to fetch processed JSON data from Flask backend
         function fetchProcessedJsonData() {
-            fetch('/get_json', {
+            //fetch('http://localhost:5000/get_json', {
+            //fetch('http://192.168.2.18:5000/get_json', {
+            fetch('https://nahid-sekander.duckdns.org/pixy/get_json', {
                 method: 'GET',
             })
             .then(response => response.json())
             .then(data => {
                 console.log('Processed JSON Data:', data);
-                renderOnCanvas(data);
+                displayJsonData(data); // Function to display data on the frontend
+                //drawRedSquare(data.blocks[0].x, data.blocks[0].y);
+                //console.log(data.blocks[0].x)
+                //console.log(data.blocks[0].y);
+                drawBlocks(data[0].blocks);
+
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
         }
 
-        // Function to render the processed data on the canvas
-        function renderOnCanvas(data) {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-
-            // Clear the canvas before drawing
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-
-            // Draw a rectangle based on the received JSON data
-            const { x, y, w, h } = data;
-            ctx.fillStyle = 'rgba(0, 128, 255, 0.5)';
-            ctx.fillRect(x, y, w, h);
-
-            // Optionally add signature or other text
-            ctx.fillStyle = 'black';
-            ctx.font = '16px Arial';
-            ctx.fillText('Signature: ' + data.signature, 10, canvas.height - 10);
+        // Function to display the fetched JSON data on the page
+        function displayJsonData(data) {
+            const dataContainer = document.getElementById('jsonData');
+            dataContainer.innerHTML = JSON.stringify(data, null, 2); // Prettify the JSON
         }
 
-	// Call the fetch function every 1000 milliseconds (1 second)
-        setInterval(fetchProcessedJsonData, 1000);
+        // Function to draw blocks on the canvas
+        function drawBlocks(blocks) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            //console.log(blocks['signature']);
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas before drawing
+
+            let detectedColour;
+
+            blocks.forEach(block => {
+                console.log(block.signature); // Logs 1 and 2
+                if (block.signature == 1)
+                    ctx.fillStyle =  'red'; // Set the fill color to red
+                else if (block.signature == 2)
+                    ctx.fillStyle =  'orange'; // Set the fill color to red
+                else if (block.signature == 3)
+                    ctx.fillStyle =  'blue'; // Set the fill color to red
+                else if (block.signature == 4)
+                    ctx.fillStyle =  'green'; // Set the fill color to red
+                ctx.fillStyle = detectedColour; // Set the fill color to red
+                ctx.fillRect(block.x, block.y, block.width, block.height); // Draw each block
+            });
+        }
+
+        // Call the fetch function every 1000 milliseconds (1 second)
+        //setInterval(fetchProcessedJsonData, 1000);
+        setInterval(fetchProcessedJsonData, 100);
 
     </script>
 </head>
 <body>
-    <h1>Playing Video</h1>
+    <h1>Processed JSON Data</h1>
 
+    <!-- Container to display the fetched JSON data -->
+    <pre id="jsonData">Loading...</pre>
 
     <!-- Canvas to render the data -->
     <canvas id="canvas" width="640" height="480"></canvas>
-
-
-    <!-- URL of the video from Flask API 
-    <video width="640" height="480" controls>
-        <source src="http://localhost:5000/video" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    -->
 </body>
 </html>
 
