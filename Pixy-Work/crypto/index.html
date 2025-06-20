@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Blockchain Wallet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #0056b3;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      text-align: left;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .error {
+      color: red;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    .link-btn {
+      margin-top: 10px;
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 14px;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed; 
+      z-index: 999; 
+      padding-top: 100px; 
+      left: 0; top: 0; width: 100%; height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.5); 
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #888;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.25);
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: black;
+    }
+    .modal button {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-container">
+  <h2>Login</h2>
+  <div id="errorMsg" class="error"></div>
+  <label for="username">Username</label>
+  <input type="text" id="username" autocomplete="username" />
+  <label for="password">Password</label>
+  <input type="password" id="password" autocomplete="current-password" />
+  <button onclick="login()">Login</button>
+  <button class="link-btn" onclick="showModal()">Create Account</button>
+</div>
+
+<!-- Register Modal -->
+<div id="registerModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h3>Create Account</h3>
+    <div id="registerError" class="error"></div>
+    <label for="regUsername">Username</label>
+    <input type="text" id="regUsername" />
+    <label for="regPassword">Password</label>
+    <input type="password" id="regPassword" />
+    <label for="regPin">4-digit PIN</label>
+    <input type="password" id="regPin" maxlength="4" />
+    <button onclick="registerUser()">Register</button>
+  </div>
+</div>
+
+<script>
+  const API_WALLET_URL = 'api/wallet.php';
+  const API_REGISTER_URL = 'api/register.php';
+
+  // Store users after fetching (for login)
+  let users = [];
+
+  async function fetchUsers() {
+    try {
+      const res = await fetch('api/users.json');
+      //const res = await fetch('data/users.json');
+      if (!res.ok) throw new Error('Failed to fetch users');
+      users = await res.json();
+    } catch(e) {
+      console.warn('Could not load users.json, fallback to default users');
+      users = [
+        { username: 'admin', password: 'adminpass', role: 'admin', wallet: '' },
+        { username: 'user', password: 'userpass', role: 'user', wallet: '' }
+      ];
+    }
+  }
+
+  async function login() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.textContent = '';
+
+    if (!username || !password) {
+        errorMsg.textContent = 'Please enter username and password.';
+        return;
+    }
+
+    try {
+        const response = await fetch('api/login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Get the full user data including wallet info
+            const userResponse = await fetch('api/users.json');
+            const users = await userResponse.json();
+            const user = users.find(u => u.username === username);
+            
+            if (user) {
+                localStorage.setItem('loggedInUser', JSON.stringify(user));
+                
+                if (user.role === 'admin') {
+                    window.location.href = 'pages/admin.html';
+                } else {
+                    window.location.href = 'pages/user.html';
+                }
+            } else {
+                errorMsg.textContent = 'User data not found.';
+            }
+        } else {
+            errorMsg.textContent = result.error || 'Login failed.';
+        }
+    } catch (e) {
+        errorMsg.textContent = 'Network error. Please try again.';
+    }
+}
+
+  // Modal functions
+  const modal = document.getElementById('registerModal');
+  const regError = document.getElementById('registerError');
+
+  function showModal() {
+    regError.textContent = '';
+    document.getElementById('regUsername').value = '';
+    document.getElementById('regPassword').value = '';
+    modal.style.display = 'block';
+  }
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+  window.onclick = function(event) {
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+
+  async function registerUser() {
+    regError.textContent = '';
+    const username = document.getElementById('regUsername').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
+      const pin = document.getElementById('regPin').value.trim();
+
+    // if (!username || !password) {
+    //   regError.textContent = 'Please enter both username and password.';
+    //   return;
+    // }
+
+    if (!username || !password || !pin) {
+      regError.textContent = 'Please fill out all fields.';
+      return;
+    }
+      if (!/^\d{4}$/.test(pin)) {
+      regError.textContent = 'PIN must be exactly 4 digits.';
+      return;
+    }
+
+    await fetchUsers();
+
+    // Check if username exists
+    if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
+      regError.textContent = 'Username already exists. Please choose another.';
+      return;
+    }
+
+    // Step 1: Create wallet by calling wallet API
+    let walletAddress = '';
+    let walletPrivateKey = '';
+    try {
+      const res = await fetch(`${API_WALLET_URL}?action=create_wallet`);
+        //console.log(res);
+      const data = await res.json();
+        //console.log(data.wallet.address)
+        //console.log(data.wallet.privateKey)
+      if (data.wallet.address) {
+        walletAddress = data.wallet.address;
+        walletPrivateKey = data.wallet.privateKey;
+      } else {
+        regError.textContent = '1 Failed to create wallet. Try again later.';
+        return;
+      }
+    } catch(e) {
+      regError.textContent = '2 Failed to create wallet. Try again later.';
+      return;
+    }
+
+    // Step 2: Send new user data to register API to save
+    try {
+        //console.log("User: " + username);
+        //console.log("Pass: " + password);
+        //console.log("Addr: " + walletAddress);
+        //console.log("key: " + walletPrivateKey);
+      const response = await fetch(API_REGISTER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        //body: JSON.stringify({ username, password, walletAddress })
+        body: JSON.stringify({ username, password, pin, walletAddress, walletPrivateKey })
+      });
+      const result = await response.json();
+        console.log(result);
+      if (result.success) {
+        alert('Account created successfully! You can now login.');
+        closeModal();
+      } else {
+        regError.textContent = result.error || 'Failed to create account.';
+          console.log(result.error);
+      }
+    } catch(e) {
+      regError.textContent = 'Server error. Please try again.';
+    }
+  }
+
+  // Redirect if already logged in
+  window.onload = async () => {
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (loggedInUser) {
+      if (loggedInUser.role === 'admin') {
+        //window.location.href = 'admin.html';
+        window.location.href = 'pages/admin.html';
+      } else if (loggedInUser.role === 'user') {
+        //window.location.href = 'user.html';
+        window.location.href = 'pages/user.html';
+      }
+    }
+  };
+  
+</script>
+
+</body>
+</html>
+

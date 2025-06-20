@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Wallet Interface</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+    .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 700px; margin: auto; }
+    h1, h2 { color: #0056b3; }
+    .section { margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    label { display: block; margin-top: 10px; margin-bottom: 5px; font-weight: bold; }
+    input[type="text"], input[type="number"], input[type="password"] {
+      width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;
+    }
+    button {
+      background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; margin-right: 5px;
+    }
+    button:hover { background-color: #0056b3; }
+    pre { background-color: #eee; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; }
+    .error { color: red; font-weight: bold; }
+    .success { color: green; font-weight: bold; }
+    .logout { text-align: right; margin-bottom: 10px; }
+    .logout button { background-color: gray; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+    .logout button:hover { background-color: #555; }
+    .accordion { margin-bottom: 15px; }
+    .accordion-toggle {
+      width: 100%; background-color: #007bff; color: white; padding: 12px;
+      text-align: left; font-size: 16px; font-weight: bold;
+      border: none; outline: none; border-radius: 5px; cursor: pointer;
+    }
+    .accordion-toggle:hover { background-color: #0056b3; }
+    .accordion-content {
+      max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out;
+      background: #fff; border: 1px solid #ccc; border-top: none;
+      border-radius: 0 0 5px 5px;
+    }
+    .accordion-content .section {
+      margin: 0; border: none; padding: 10px;
+    }
+    .tx-sent { color: red; }
+    .tx-received { color: green; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+       
+    /* Modal styles */
+    .modal-overlay {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal pre {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 5px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.9em;
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .modal-close-btn:hover {
+      background: #c82333;
+    }
+  </style>
+</head>
+<body>
+
+	<!--<div class="container">-->
+<main class="container">
+  <div class="logout">
+    <button onclick="logout()">🚪 Logout</button>
+  </div>
+
+  <h1>User Wallet Dashboard 🪙</h1>
+
+  <div id="userBalance" class="section">
+    <h2>💰 Your Current Balance</h2>
+    <p id="balanceDisplay">Loading...</p>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-toggle">📜 Transaction History</button>
+    <div class="accordion-content">
+      <div id="transactionHistory" class="section">
+        <div id="historyContainer">
+          <p>Loading history...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sendTransaction" class="section">
+    <h2>💸 Send Coins</h2>
+<!--
+    <label for="sendToUsername">Recipient Username:</label>
+    <input type="text" id="sendToUsername" placeholder="Recipient Username">
+    -->
+    <label for="recipientSelect">Recipient:</label>
+    <select id="recipientSelect">
+  	<option value="">-- Select a user --</option>
+    </select>
+
+    <label for="sendAmount">Amount:</label>
+    <input type="number" id="sendAmount" placeholder="Amount to Send">
+    <button onclick="sendCoins()">Send Coins</button>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-toggle">📋 API Response</button>
+    <div class="accordion-content">
+      <div id="responseArea" class="section">
+        <pre id="apiResponse">Responses will appear here...</pre>
+      </div>
+    </div>
+  </div>
+
+</main>
+<!--</div>-->
+    <!-- Modal for API responses -->
+  <div id="apiModalOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalContent">
+    <div class="modal">
+      <button class="modal-close-btn" aria-label="Close modal" onclick="closeModal()">✖</button>
+      <h2 id="modalTitle">API Response</h2>
+      <pre id="modalContent">Loading...</pre>
+    </div>
+  </div>
+
+
+    <!-- PIN Verification Modal -->
+<!-- <div id="pinModal" class="modal-overlay" style="display:none; justify-content:center; align-items:center;">
+  <div class="modal">
+    <button class="modal-close-btn" onclick="closePinModal()">✖</button>
+    <h2>Enter PIN to Confirm</h2>
+    <input type="password" id="pinInput" placeholder="Enter your PIN" autocomplete="off" />
+    <div id="pinError" style="color:red; margin-top:8px;"></div>
+    <button onclick="verifyPinAndSend()">Confirm</button>
+  </div>
+</div> -->
+
+<!-- PIN Verification Modal -->
+<div id="pinModal" class="modal-overlay" style="display:none; justify-content:center; align-items:center;">
+  <div class="modal" style="text-align: center;">
+    <button class="modal-close-btn" onclick="closePinModal()">✖</button>
+    <h2>Enter PIN to Confirm</h2>
+    <input type="password" id="pinInput" placeholder="Enter your PIN" autocomplete="off" readonly style="font-size: 1.2em; text-align: center;" />
+    
+    <!-- Numpad -->
+    <div id="numpad" style="display: grid; grid-template-columns: repeat(3, 60px); gap: 10px; justify-content: center; margin-top: 15px;">
+      <button onclick="appendPin('1')">1</button>
+      <button onclick="appendPin('2')">2</button>
+      <button onclick="appendPin('3')">3</button>
+      <button onclick="appendPin('4')">4</button>
+      <button onclick="appendPin('5')">5</button>
+      <button onclick="appendPin('6')">6</button>
+      <button onclick="appendPin('7')">7</button>
+      <button onclick="appendPin('8')">8</button>
+      <button onclick="appendPin('9')">9</button>
+      <button onclick="clearPin()">⌫</button>
+      <button onclick="appendPin('0')">0</button>
+      <button onclick="verifyPinAndSend()">✔</button>
+    </div>
+
+    <div id="pinError" style="color:red; margin-top:8px;"></div>
+  </div>
+</div>
+
+
+<script>
+  const API_URL = '../api/wallet.php';
+  const USERS_JSON_URL = '../api/users.json';
+  const responseElement = document.getElementById('apiResponse');
+  let userBalance = 0;
+
+  const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+  if (!loggedInUser || loggedInUser.role !== 'user') {
+    window.location.href = 'login.html';
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (loggedInUser?.wallet) {
+      displayUserBalance(loggedInUser.wallet);
+      displayTransactionHistory(loggedInUser.wallet);
+	        populateRecipientDropdown();
+    } else {
+      document.getElementById('balanceDisplay').textContent = 'Wallet not available.';
+      document.getElementById('historyContainer').textContent = 'Wallet not available.';
+    }
+  });
+
+  function logout() {
+    localStorage.removeItem('loggedInUser');
+    window.location.href = '../index.html';
+  }
+
+    // Modal handling
+    const modalOverlay = document.getElementById('apiModalOverlay');
+    const modalContent = document.getElementById('modalContent');
+
+    function showModal(content) {
+      modalContent.textContent = content;
+      modalOverlay.style.display = 'flex';
+    }
+
+    function closeModal() {
+      modalOverlay.style.display = 'none';
+    }
+  
+
+  async function callApi(action, method = 'GET', body = null) {
+    responseElement.textContent = 'Loading...';
+    try {
+      let url = `${API_URL}?action=${action}`;
+      const options = { method, headers: {} };
+
+      if (method === 'POST' && body) {
+        options.headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(url, options);
+      const data = await response.json();
+      responseElement.textContent = JSON.stringify(data, null, 2);
+      responseElement.className = data.error ? 'error' : 'success';
+      return data;
+    } catch (error) {
+      responseElement.textContent = `Error: ${error.message}`;
+      responseElement.className = 'error';
+      return null;
+    }
+  }
+
+  async function getRecipientWallet(username) {
+    try {
+      const response = await fetch(USERS_JSON_URL);
+      if (!response.ok) throw new Error('Failed to load users.json');
+      const users = await response.json();
+      const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+      if (!user?.wallet) throw new Error('Recipient wallet not found');
+      return user.wallet;
+    } catch (error) {
+      responseElement.textContent = `Error: ${error.message}`;
+      responseElement.className = 'error';
+      return null;
+    }
+  }
+
+
+  let pendingSendData = null;
+
+async function sendCoins() {
+  const recipientUsername = document.getElementById('recipientSelect').value;
+  const amount = parseFloat(document.getElementById('sendAmount').value);
+
+  if (!recipientUsername || isNaN(amount) || amount <= 0) {
+    const errorMsg = 'Error: Please select a recipient and enter a valid amount.';
+    responseElement.textContent = errorMsg;
+    responseElement.className = 'error';
+    showModal(errorMsg);
+    return;
+  }
+  // console.log('User balance:', userBalance);
+
+
+  if (userBalance <= 0 || userBalance < amount) {
+    const errorMsg = 'Not enough coins.';
+    responseElement.textContent = errorMsg;
+    responseElement.className = 'error';
+    showModal(errorMsg);
+    return;
+  }
+  // console.log('User balance:', userBalance);
+
+  // if (userBalance < amount) {
+  //   const errorMsg = 'Error: Not enough coins.';
+  //   responseElement.textContent = errorMsg;
+  //   responseElement.className = 'error';
+  //   showModal(errorMsg);
+  //   return;
+  // }
+
+  const from = loggedInUser.wallet;
+  const private_key = loggedInUser.privateKey;
+  if (!from || !private_key) {
+    const errorMsg = 'Error: Wallet or private key missing.';
+    responseElement.textContent = errorMsg;
+    responseElement.className = 'error';
+    showModal(errorMsg);
+    return;
+  }
+  // console.log('User balance:', userBalance);
+
+  // Save data to use after pin confirmation
+  pendingSendData = { recipientUsername, amount, from, private_key };
+
+  // Show PIN modal
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('pinModal').style.display = 'flex';
+}
+
+function closePinModal() {
+  document.getElementById('pinModal').style.display = 'none';
+}
+
+function appendPin(digit) {
+  const input = document.getElementById('pinInput');
+  if (input.value.length < 6) { // Optional: Limit to 6 digits
+    input.value += digit;
+  }
+}
+
+function clearPin() {
+  const input = document.getElementById('pinInput');
+  input.value = input.value.slice(0, -1);
+}
+
+function closePinModal() {
+  document.getElementById('pinModal').style.display = 'none';
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+}
+
+
+async function verifyPinAndSend() {
+  const pin = document.getElementById('pinInput').value.trim();
+
+  if (pin.length < 4) {
+    document.getElementById('pinError').textContent = 'PIN must be at least 4 digits.';
+    return;
+  }
+
+  const pinError = document.getElementById('pinError');
+
+  if (!pin) {
+    pinError.textContent = 'Please enter your PIN.';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/verify_pin.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin })
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      pinError.textContent = 'Invalid PIN. Please try again.';
+      return;
+    }
+
+    // PIN is valid, proceed
+    closePinModal();
+
+    const { recipientUsername, amount, from, private_key } = pendingSendData;
+    pendingSendData = null;
+
+    const to = await getRecipientWallet(recipientUsername);
+    if (!to) {
+      showModal('Error: Unable to find recipient wallet.');
+      return;
+    }
+
+    const data = await callApi('send', 'POST', { from, private_key, to, amount });
+    const modalMessage = data.error
+      ? `❌ Error:\n${JSON.stringify(data, null, 2)}`
+      : `✅ Success:\n${JSON.stringify(data, null, 2)}`;
+    showModal(modalMessage);
+
+    await displayUserBalance(from);
+    await displayTransactionHistory(from);
+
+  } catch (error) {
+    pinError.textContent = 'Network error. Please try again.';
+  }
+}
+
+
+
+  /*
+  let pendingSendData = null; // Store data temporarily to send after pin verification
+
+  async function sendCoins() {
+  const recipientUsername = document.getElementById('recipientSelect').value;
+  const amount = parseFloat(document.getElementById('sendAmount').value);
+
+  if (!recipientUsername || isNaN(amount) || amount <= 0) {
+    const errorMsg = 'Error: Please select a recipient and enter a valid amount.';
+    //responseElement.textContent = 'Error: Please select a recipient and enter a valid amount.';
+    responseElement.textContent = errorMsg;
+    responseElement.className = 'error';
+    showModal(errorMsg);
+    return;
+  }
+
+  if (userBalance <= 0) {
+    const errorMsg = 'Error: Not enough coins.';
+    responseElement.textContent = errorMsg;
+    responseElement.className = 'error';
+    showModal(errorMsg);
+    return;
+  }
+
+  if (userBalance <= amount) {
+    const errorMsg = 'Error: Not enough coins.';
+    responseElement.textContent = errorMsg;
+    responseElement.className = 'error';
+    showModal(errorMsg);
+    return;
+  }
+
+  const from = loggedInUser.wallet;
+  const private_key = loggedInUser.privateKey;
+  if (!from || !private_key) {
+    responseElement.textContent = 'Error: Wallet or private key missing.';
+    responseElement.className = 'error';
+    return;
+  }
+
+
+  // Save data to use after pin confirmation
+  pendingSendData = { recipientUsername, amount, from, private_key };
+
+  // Show PIN modal
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('pinModal').style.display = 'flex';
+
+
+
+  // const to = await getRecipientWallet(recipientUsername);
+  // if (!to) return;
+
+  // //await callApi('send', 'POST', { from, private_key, to, amount });
+  // const data = await callApi('send', 'POST', { from, private_key, to, amount });
+  // if (data) {
+  //   const modalMessage = data.error
+  //     ? `❌ Error:\n${JSON.stringify(data, null, 2)}`
+  //     : `✅ Success:\n${JSON.stringify(data, null, 2)}`;
+  //   showModal(modalMessage);
+  // }
+  
+  // await displayUserBalance(from);
+  // await displayTransactionHistory(from);
+}
+
+
+function closePinModal() {
+  document.getElementById('pinModal').style.display = 'none';
+}
+
+async function verifyPinAndSend() {
+  const pin = document.getElementById('pinInput').value.trim();
+  const pinError = document.getElementById('pinError');
+
+  if (!pin) {
+    pinError.textContent = 'Please enter your PIN.';
+    return;
+  }
+
+  // Call your backend API to verify PIN stored in session
+  try {
+    const res = await fetch('/api/verify_pin.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin })
+    });
+    const result = await res.json();
+
+    if (!result.success) {
+      pinError.textContent = 'Invalid PIN. Please try again.';
+      return;
+    }
+
+    // PIN is valid, proceed to send coins
+    closePinModal();
+
+    // Use the saved send data
+    const { recipientUsername, amount, from, private_key } = pendingSendData;
+    pendingSendData = null;
+
+    const to = await getRecipientWallet(recipientUsername);
+    if (!to) return;
+
+    const data = await callApi('send', 'POST', { from, private_key, to, amount });
+    if (data) {
+      const modalMessage = data.error
+        ? `❌ Error:\n${JSON.stringify(data, null, 2)}`
+        : `✅ Success:\n${JSON.stringify(data, null, 2)}`;
+      showModal(modalMessage);
+    }
+
+    await displayUserBalance(from);
+    await displayTransactionHistory(from);
+
+  } catch (error) {
+    pinError.textContent = 'Network error. Please try again.';
+  }
+}
+*/
+
+  async function displayUserBalance(walletAddress) {
+    try {
+      const data = await callApi('get_balances');
+      if (data?.balances) {
+        userBalance = data.balances[walletAddress];
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        balanceDisplay.textContent = userBalance !== undefined ? `${userBalance} coins` : 'No balance found.';
+      }
+      responseElement.textContent = JSON.stringify(loggedInUser, null, 2);
+    } catch {
+      document.getElementById('balanceDisplay').textContent = 'Error loading balance.';
+    }
+  }
+
+  async function displayTransactionHistory(walletAddress) {
+    const historyContainer = document.getElementById('historyContainer');
+    historyContainer.innerHTML = '<p>Loading history...</p>';
+
+    try {
+      const blockchainData = await callApi('load_blockchain');
+      if (!blockchainData?.success || !Array.isArray(blockchainData.blockchain)) {
+        throw new Error('Invalid blockchain data');
+      }
+
+      const usersResponse = await fetch(USERS_JSON_URL);
+      if (!usersResponse.ok) throw new Error('Failed to load users.json');
+      const users = await usersResponse.json();
+      const walletToUsername = {};
+      users.forEach(user => {
+        if (user.wallet) walletToUsername[user.wallet] = user.username;
+      });
+
+      const userTransactions = [];
+      for (const block of blockchainData.blockchain) {
+        if (Array.isArray(block.transactions)) {
+          for (const tx of block.transactions) {
+            if (tx.from === walletAddress || tx.to === walletAddress) {
+              userTransactions.push({ ...tx, timestamp: block.timestamp });
+            }
+          }
+        }
+      }
+
+      if (userTransactions.length === 0) {
+        historyContainer.innerHTML = '<p>No transactions found.</p>';
+        return;
+      }
+
+      let tableHtml = `<table><thead><tr><th>Date</th><th>Type</th><th>From/To</th><th>Amount</th></tr></thead><tbody>`;
+      userTransactions.reverse().forEach(tx => {
+        const date = new Date(tx.timestamp * 1000).toLocaleString();
+        const isSent = tx.from === walletAddress;
+        const type = isSent ? 'Sent' : 'Received';
+        const typeClass = isSent ? 'tx-sent' : 'tx-received';
+        const otherWallet = isSent ? tx.to : tx.from;
+        const otherUser = walletToUsername[otherWallet] || otherWallet;
+
+        tableHtml += `<tr>
+            <td>${date}</td>
+            <td class="${typeClass}">${type}</td>
+            <td>${otherUser}</td>
+            <td class="${typeClass}">${isSent ? '-' : '+'}${tx.amount}</td>
+          </tr>`;
+      });
+      tableHtml += `</tbody></table>`;
+      historyContainer.innerHTML = tableHtml;
+
+    } catch (error) {
+      historyContainer.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+    }
+  }
+
+
+  async function populateRecipientDropdown() {
+  const select = document.getElementById('recipientSelect');
+  try {
+    const response = await fetch(USERS_JSON_URL);
+    if (!response.ok) throw new Error(`Failed to load users.json: ${response.statusText}`);
+    const users = await response.json();
+
+    if (!Array.isArray(users)) throw new Error('users.json is not an array');
+
+    // Clear existing options except first placeholder
+    select.innerHTML = '<option value="">-- Select a user --</option>';
+
+    users.forEach(user => {
+      if (user.username !== loggedInUser.username && user.wallet) {
+        const option = document.createElement('option');
+        option.value = user.username;
+        option.textContent = user.username;
+        select.appendChild(option);
+      }
+    });
+
+    if (select.options.length === 1) {
+      // No other users found
+      const option = document.createElement('option');
+      option.textContent = 'No other users available';
+      option.disabled = true;
+      select.appendChild(option);
+    }
+  } catch (err) {
+    responseElement.textContent = `Error loading users: ${err.message}`;
+    responseElement.className = 'error';
+    console.error('Error in populateRecipientDropdown:', err);
+  }
+}
+
+
+
+
+  document.querySelectorAll('.accordion-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+      const content = button.nextElementSibling;
+      content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + 'px';
+    });
+  });
+</script>
+
+</body>
+</html>
+
