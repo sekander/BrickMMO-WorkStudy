@@ -40,192 +40,90 @@ all_detections = {}
 
 @app.route('/')
 def home():
-    processed_data = {}
     return 'Hello, Flask!'
 
-#@app.route('/json', methods=['POST'])
-#def handle_json():
+
+def process_pixy_json(data, camera_id):
+    """
+    Process incoming JSON from Pixy camera, apply undistortion, and return cleaned data.
+    """
+    if isinstance(data, list):
+        data = data[0]  # Flatten list input if necessary
+
+    if "signature" not in data:
+        return None, {"message": "OTHER JSON received successfully"}
+
+    try:
+        sig = data['signature']
+        j_x, j_y = data['x'], data['y']
+        j_w, j_h = data['width'], data['height']
+
+        # Camera parameters
+        w, h = 316, 208
+        centre = (w // 2, h // 2)
+
+        camera_matrix = np.array([
+            [w, 0, centre[0]],
+            [0, w, centre[1]],
+            [0, 0, 1]
+        ], dtype=np.float32)
+
+        dist_coeffs = np.array([-0.2, 0.1, 0, 0], dtype=np.float32)
+
+        new_camera_matrix = cv2.getOptimalNewCameraMatrix(
+            camera_matrix, dist_coeffs, (w, h), 1, (w, h)
+        )[0]
+
+        point = np.array([[j_x, j_y]], dtype=np.float32)
+        undistorted_points = cv2.undistortPoints(
+            point, camera_matrix, dist_coeffs, P=new_camera_matrix
+        )
+
+        u_x, u_y = map(float, undistorted_points[0][0])
+
+        processed = {
+            "signature": sig,
+            "x": u_x,
+            "y": u_y,
+            "w": j_w,
+            "h": j_h
+        }
+
+        # Store results in the right global variable
+        if camera_id == 0:
+            global processed_data_0
+            processed_data_0 = processed
+        elif camera_id == 1:
+            global processed_data_1
+            processed_data_1 = processed
+
+        print(f"Camera {camera_id} processed:", processed)
+
+        return processed, {
+            "message": "PIXY JSON received successfully",
+            **processed
+        }
+
+    except json.JSONDecodeError as e:
+        return None, {"message": f"ERROR: JSON parsing failed ({e})"}
+    except Exception as e:
+        return None, {"message": f"ERROR: Unexpected error ({e})"}
+
+
 @app.route('/json_0', methods=['POST'])
 def handle_json_0():
     data = request.get_json()
-    print("Received JSON:", data)
-    #global processed_data  # Declare that we are using the global variable
-    global processed_data_0  # Declare that we are using the global variable
-    #global processed_data_1  # Declare that we are using the global variable
-    processed_data_0 = data
-    
-    # If the data is a list, grab the first item
-    if isinstance(data, list):
-        data = data[0]  # Adjust this based on your actual data structure
+    print("Received JSON (cam0):", data)
+    _, response = process_pixy_json(data, camera_id=0)
+    return jsonify(response), 200
 
-    if "signature" in data:
-        try:
-            #print("Signature key exists:", data["signature"])
-        
-            sig = data['signature']
-            j_x = data['x']
-            j_y = data['y']
-            j_w = data['width']
-            j_h = data['height']
-
-            #Camera Data
-            w = 316
-            h = 208
-            centre = (w // 2, h //2)
-            
-            camera_matrix = np.array([[w, 0, centre[0]],  # fx, 0, cx
-                                  [0, w, centre[1]],  # 0, fy, cy
-                                  [0, 0, 1]], dtype=np.float32)  # Homogeneous coordinates
-            # Assumed distortion coefficients for fisheye 
-            dist_coeffs = np.array([-0.2, 0.1, 0, 0], dtype=np.float32)
-
-            # Get the optimal new camera matrix 
-            #new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, (w, h), 1, (w, h))
-            new_camera_matrix = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, (w, h), 1, (w, h))[0]
-
-            point = np.array([[j_x, j_y]], dtype=np.float32)  # (1, 2) shape
-
-            undistorted_points = cv2.undistortPoints(point, camera_matrix, dist_coeffs, P=new_camera_matrix)
-            
-            u_x = float(undistorted_points[0][0][0])
-            u_y = float(undistorted_points[0][0][1])
-
-            # Print the transformed data
-            #print("Original Camera Matrix:\n", camera_matrix)
-            #print("\nOptimized New Camera Matrix:\n", new_camera_matrix)
-            #print("Original Points Signature:", sig, "X:", j_x, "Y:", j_y, "Width:", j_w, "Height:", j_h)
-            #print("New Matrix applied to Original Points Signature:", sig, "X:", u_x, "Y:", u_y, "Width:", j_w, "Height:", j_h)
-
-            # For now, we're just storing the received data as is
-            processed_data_0['signature'] = sig
-            processed_data_0['x'] = u_x
-            processed_data_0['y'] = u_y
-            processed_data_0['w'] = j_w
-            processed_data_0['h'] = j_h
-            
-            print(processed_data_0)
-	
-            return jsonify({
-                "message": "PIXY JSON received successfully",
-                "signature" : sig,
-                "x": u_x,
-                "y": u_y,
-                "w": j_w,
-                "h": j_h
-            }), 200
-        except json.JSONDecodeError as e:
-            print("Failed to parse JSON:", e)
-            return jsonify({
-                "message": "ERROR : JSON ",
-            }), 200
-        except Exception as e:
-            print("An unexpected error occurred:", e)
-            return jsonify({
-                "message": f"ERROR : JSON {str(e)}",
-            }), 200
-    else:
-        print("Signature key is missing.")
-        
-        return jsonify({
-            "message": "OTHER JSON received successfully",
-        }), 200
 
 @app.route('/json_1', methods=['POST'])
 def handle_json_1():
     data = request.get_json()
-    print("Received JSON:", data)
-    #global processed_data  # Declare that we are using the global variable
-    global processed_data_1  # Declare that we are using the global variable
-    #global processed_data_1  # Declare that we are using the global variable
-    processed_data_1 = data
-    
-    # If the data is a list, grab the first item
-    if isinstance(data, list):
-        data = data[0]  # Adjust this based on your actual data structure
-
-    if "signature" in data:
-        try:
-            #print("Signature key exists:", data["signature"])
-        
-            sig = data['signature']
-            j_x = data['x']
-            j_y = data['y']
-            j_w = data['width']
-            j_h = data['height']
-
-            #Camera Data
-            w = 316
-            h = 208
-            centre = (w // 2, h //2)
-            
-            camera_matrix = np.array([[w, 0, centre[0]],  # fx, 0, cx
-                                  [0, w, centre[1]],  # 0, fy, cy
-                                  [0, 0, 1]], dtype=np.float32)  # Homogeneous coordinates
-            # Assumed distortion coefficients for fisheye 
-            dist_coeffs = np.array([-0.2, 0.1, 0, 0], dtype=np.float32)
-
-            # Get the optimal new camera matrix 
-            #new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, (w, h), 1, (w, h))
-            new_camera_matrix = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, (w, h), 1, (w, h))[0]
-
-            point = np.array([[j_x, j_y]], dtype=np.float32)  # (1, 2) shape
-
-            undistorted_points = cv2.undistortPoints(point, camera_matrix, dist_coeffs, P=new_camera_matrix)
-            
-            u_x = float(undistorted_points[0][0][0])
-            u_y = float(undistorted_points[0][0][1])
-
-            # Print the transformed data
-            #print("Original Camera Matrix:\n", camera_matrix)
-            #print("\nOptimized New Camera Matrix:\n", new_camera_matrix)
-            #print("Original Points Signature:", sig, "X:", j_x, "Y:", j_y, "Width:", j_w, "Height:", j_h)
-            #print("New Matrix applied to Original Points Signature:", sig, "X:", u_x, "Y:", u_y, "Width:", j_w, "Height:", j_h)
-
-            # For now, we're just storing the received data as is
-            processed_data_1['signature'] = sig
-            processed_data_1['x'] = u_x
-            processed_data_1['y'] = u_y
-            processed_data_1['w'] = j_w
-            processed_data_1['h'] = j_h
-            
-            print(processed_data_1)
-	
-            return jsonify({
-                "message": "PIXY JSON received successfully",
-                "signature" : sig,
-                "x": u_x,
-                "y": u_y,
-                "w": j_w,
-                "h": j_h
-            }), 200
-        except json.JSONDecodeError as e:
-            print("Failed to parse JSON:", e)
-            return jsonify({
-                "message": "ERROR : JSON ",
-            }), 200
-        except Exception as e:
-            print("An unexpected error occurred:", e)
-            return jsonify({
-                "message": f"ERROR : JSON {str(e)}",
-            }), 200
-    else:
-        print("Signature key is missing.")
-        
-        return jsonify({
-            "message": "OTHER JSON received successfully",
-        }), 200
-
-@app.route('/get_json', methods=['GET'])
-def get_json():
-    # Return the processed JSON data
-    #if processed_data:
-    if processed_data is not None:
-        print(processed_data);
-        return jsonify(processed_data), 200
-    else:
-        return jsonify({
-            "message": "No data available"
-        }), 404
+    print("Received JSON (cam1):", data)
+    _, response = process_pixy_json(data, camera_id=1)
+    return jsonify(response), 200
 
 @app.route('/get_json_0', methods=['GET'])
 def get_json_0():
