@@ -1,6 +1,3 @@
-Here’s your document properly formatted into clean **Markdown**:
-
-```markdown
 # BrickMMO Pixy Viewer - Frontend
 
 A Flutter-based frontend application for visualizing and tracking LEGO blocks detected by Pixy cameras in the BrickMMO ecosystem.  
@@ -33,32 +30,30 @@ This application provides real-time monitoring, block registration, tracking, an
 
 ## 📦 Project Structure
 
-```
-
+```text
 lib/
 ├── main.dart                   # Application entry point
 ├── models/
-│   └── block\_data.dart          # Block data model and serialization
+│   └── block_data.dart          # Block data model and serialization
 ├── services/
-│   ├── block\_tracker.dart       # Block tracking and movement prediction
-│   ├── crypto\_service.dart      # Cryptocurrency operations
-│   ├── map\_service.dart         # Grid map data handling
-│   └── pixy\_service.dart        # Pixy camera communication
+│   ├── block_tracker.dart       # Block tracking and movement prediction
+│   ├── crypto_service.dart      # Cryptocurrency operations
+│   ├── map_service.dart         # Grid map data handling
+│   └── pixy_service.dart        # Pixy camera communication
 ├── views/
-│   ├── city\_grid\_view\.dart      # Main grid visualization
-│   ├── original\_camera\_view\.dart
-│   ├── pixy\_blocks\_view\.dart
-│   └── undistorted\_camera\_view\.dart
+│   ├── city_grid_view.dart      # Main grid visualization
+│   ├── original_camera_view.dart
+│   ├── pixy_blocks_view.dart
+│   └── undistorted_camera_view.dart
 └── widgets/
-├── grid\_cell.dart           # Individual grid cell component
-├── home\_switcher.dart       # Navigation controller
-├── hover\_overlay.dart       # Information overlay
-├── initial\_loader.dart      # Splash screen and initialization
-├── splash\_screen.dart       # Animated splash screen
-├── tile\_info\_modal.dart     # Detailed block information modal
-├── tracked\_blocks\_panel.dart # Tracking control panel
-└── tracked\_block\_tooltip.dart # Visual block markers
-
+    ├── grid_cell.dart           # Individual grid cell component
+    ├── home_switcher.dart       # Navigation controller
+    ├── hover_overlay.dart       # Information overlay
+    ├── initial_loader.dart      # Splash screen and initialization
+    ├── splash_screen.dart       # Animated splash screen
+    ├── tile_info_modal.dart     # Detailed block information modal
+    ├── tracked_blocks_panel.dart # Tracking control panel
+    └── tracked_block_tooltip.dart # Visual block markers
 ````
 
 ---
@@ -67,28 +62,30 @@ lib/
 
 The application follows a **service-based architecture**:
 
-1. **Services Layer**: Handles all business logic and API communications  
-2. **Models Layer**: Data structures and serialization/deserialization  
-3. **Views Layer**: Main screen components and navigation  
-4. **Widgets Layer**: Reusable UI components and overlays  
+1. **Services Layer**: Handles all business logic and API communications
+2. **Models Layer**: Data structures and serialization/deserialization
+3. **Views Layer**: Main screen components and navigation
+4. **Widgets Layer**: Reusable UI components and overlays
 
 ---
 
 ## 🔧 Installation
 
 ### Prerequisites
-- Flutter SDK 3.0 or higher  
-- Dart 2.17 or higher  
-- Android Studio / VSCode with Flutter extension  
-- Physical device or emulator  
+
+* Flutter SDK 3.0 or higher
+* Dart 2.17 or higher
+* Android Studio / VSCode with Flutter extension
+* Physical device or emulator
 
 ### Setup Steps
 
 1. **Clone the repository**
+
    ```bash
-   git clone
+   git clone <your-repo-url>
    cd brickmmo_pixy_viewer
-````
+   ```
 
 2. **Install dependencies**
 
@@ -125,11 +122,11 @@ CRYPTO_API_BASE_URL=http://192.168/projects/crypto/api
 
 ### API Endpoints
 
-* `GET /pixy/get_json_0` - Pixy camera 1 data
-* `GET /pixy/get_json_1` - Pixy camera 2 data
-* `POST /pixy/insert_detection` - Register new blocks
-* `POST /pixy/update_tracking` - Update block positions
-* `POST /crypto/api/*` - Cryptocurrency operations
+* `GET /pixy/get_json_0` → Pixy camera 1 data
+* `GET /pixy/get_json_1` → Pixy camera 2 data
+* `POST /pixy/insert_detection` → Register new blocks
+* `POST /pixy/update_tracking` → Update block positions
+* `POST /crypto/api/*` → Cryptocurrency operations
 
 ---
 
@@ -223,10 +220,4 @@ void main() {
 }
 ```
 
-```
-
 ---
-
-Do you want me to also generate a **README.md file** from this so you can drop it straight into your repo?
-```
-

@@ -1,183 +1,309 @@
-Got it 👍 — you want the same style of structured **documentation / README** for your **Pixy2 Dual Camera Block Detection and JSON API** project, just like the GNOME Terminal guide. Here’s a clean version formatted like a proper README:
+# BrickMMO Pixy Vision System
 
----
+A comprehensive computer vision system for detecting and tracking LEGO blocks using Pixy2 cameras, with a full-stack implementation including C++ detection, Flask backend, and Flutter frontend.
 
-# Pixy2 Dual Camera Block Detection and JSON API
+## 📋 System Overview
 
-This C++ application interfaces with one or two **Pixy2 cameras** to detect coloured objects (blocks), format the data as **JSON**, and send it to a backend server via **HTTP POST** requests.
+This system provides real-time LEGO block detection, tracking, and visualization for the BrickMMO ecosystem. It consists of three main components:
 
----
+1. **C++ Pixy2 Detection Application** - Camera interface and block detection
+2. **Flask Backend API** - Data processing, storage, and image handling
+3. **Flutter Frontend** - Real-time visualization and user interface
 
-## ✨ Features
+## 🏗️ Architecture
 
-* **Dual Camera Support** – Connects to and processes data from two Pixy2 cameras simultaneously.
-* **JSON Output** – Formats detected block data into structured JSON.
-* **HTTP POST Integration** – Sends data to a configurable backend endpoint.
-* **Configurable Filtering** – Filters blocks based on Y-coordinate ranges.
-* **Coordinate Adjustment** – Applies offsets to camera coordinates for spatial alignment.
-
----
-
-## 🔧 Prerequisites
-
-### Hardware
-
-* One or two Pixy2 cameras (USB connection).
-* Internet connection for backend communication.
-
-### Software Dependencies
-
-* [`libpixyusb2`](https://github.com/charmedlabs/pixy2) (Pixy2 SDK).
-* [RapidJSON](https://rapidjson.org/) (JSON processing).
-* [libcurl](https://curl.se/libcurl/) (HTTP requests).
-* A C++11 compatible compiler.
-
----
-
-## ⚙️ Installation
-
-### 1. Install required libraries
-
-On **Ubuntu/Debian**:
-
-```bash
-sudo apt-get update
-sudo apt-get install libcurl4-openssl-dev rapidjson-dev
+```
+Physical Layer:    [Pixy2 Cameras] → USB → [Computer]
+Detection Layer:   [C++ Application] → HTTP → [Flask Backend]
+Data Layer:        [MongoDB] ←→ [Flask Backend] ←→ [Flutter Frontend]
+Presentation:      [Flutter Web/Mobile App] → Users
 ```
 
-If `rapidjson-dev` is not available, install it manually from source.
+## 🚀 Quick Start
 
----
+### Prerequisites
+- Ubuntu/Linux system
+- Python 3.7+
+- Flutter SDK
+- MongoDB
+- Pixy2 cameras
 
-### 2. Clone and build `libpixyusb2`
+### Installation Steps
 
-```bash
-git clone https://github.com/charmedlabs/pixy2.git
-cd pixy2/scripts
-./build_libpixyusb2.sh
-sudo make install
-```
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd BrickMMO-WorkStudy
+   ```
 
----
+2. **Set up the C++ detection application**
+   ```bash
+   cd pixy_cpp
+   sudo apt-get install libcurl4-openssl-dev rapidjson-dev
+   ./install_pixy_dependencies.sh
+   g++ -o pixy_detector main.cpp -lpixy2 -lcurl -std=c++11
+   ```
 
-### 3. Compile this application
+3. **Set up the Flask backend**
+   ```bash
+   cd ../back-end
+   pip install -r requirements.txt
+   mkdir -p static/converted_imagesi/regular static/converted_imagesi/clean
+   ```
 
-```bash
-g++ -o pixy_detector main.cpp -lpixy2 -lcurl -std=c++11
-```
+4. **Set up the Flutter frontend**
+   ```bash
+   cd ../front-end
+   flutter pub get
+   ```
 
----
+5. **Configure environment**
+   - Update backend URL in `pixy_cpp/main.cpp`
+   - Configure MongoDB connection in `back-end/app.py`
+   - Set API endpoints in `front-end/lib/services/`
 
-## ⚙️ Configuration
+### Running the System
 
-### Backend URL
+1. **Start MongoDB**
+   ```bash
+   sudo systemctl start mongod
+   ```
 
-Set your backend endpoint inside `main.cpp`:
+2. **Launch the backend**
+   ```bash
+   cd back-end
+   python app.py
+   ```
 
+3. **Run the detection application**
+   ```bash
+   cd pixy_cpp
+   sudo ./pixy_detector
+   ```
+
+4. **Start the frontend**
+   ```bash
+   cd front-end
+   flutter run
+   ```
+
+## 📊 Component Details
+
+### C++ Pixy Detection Application
+
+**Features:**
+- Dual camera support with simultaneous processing
+- Real-time color signature detection
+- Configurable filtering by position and size
+- JSON data formatting with coordinate adjustment
+- HTTP POST integration to backend
+
+**Key Configuration:**
 ```cpp
-const char* backend_url = "your-backend-url-here";
-```
-
-### Camera Parameters
-
-You can customise filtering and offsets in `get_blocks_custom()`:
-
-```cpp
-// Parameters: camera, name, y-start, y-end, x-offset, y-offset
+// Camera parameters
 get_blocks_custom(pixy, "PC-CAMERA 1: ", 0, 207, 0, 0, jsonOutput);
+
+// Backend URL
+const char* backend_url = "192.168.2.87:5012/json_0";
 ```
 
----
+### Flask Backend API
 
-## ▶️ Usage
+**Endpoints:**
+- `POST /json_0`, `/json_1` - Receive detection data from cameras
+- `GET /get_json_0`, `/get_json_1` - Retrieve processed data
+- `POST /insert_detection` - Store new detections
+- `POST /update_tracking` - Update block positions
+- `POST /upload` - Process PPM images
+- `GET /latest.png` - Serve processed images
 
-Run the program (requires root for USB access):
+**Data Processing:**
+- Fisheye distortion correction
+- Coordinate transformation
+- MongoDB storage with timestamps
+- Image conversion (PPM to PNG)
 
-```bash
-sudo ./pixy_detector
+### Flutter Frontend
+
+**Features:**
+- Real-time block visualization on city grid
+- Interactive block tracking and registration
+- Multi-camera support with signature filtering
+- Cryptocurrency integration for block transactions
+- Responsive design for desktop and mobile
+
+**Architecture:**
+- Service-based design with separate modules for:
+  - Block tracking and prediction
+  - Camera communication
+  - Cryptocurrency operations
+  - Map data handling
+
+## 🔧 Configuration Guide
+
+### Camera Calibration
+
+Adjust these parameters in `back-end/app.py`:
+```python
+# Camera matrix parameters
+w = 316  # Frame width
+h = 208  # Frame height
+centre = (w // 2, h // 2)
+
+# Distortion coefficients (adjust for your camera)
+dist_coeffs = np.array([-0.2, 0.1, 0, 0], dtype=np.float32)
 ```
 
-The program will:
+### MongoDB Setup
 
-1. Initialize connections to available Pixy2 cameras.
-2. Continuously detect coloured blocks.
-3. Format block data as JSON.
-4. Send results to the configured backend endpoint.
-5. Run until stopped with **Ctrl+C**.
-
----
-
-## 📦 JSON Output Format
-
-Example:
-
-```json
-[
-  {
-    "camera": "PC-CAMERA 1: ",
-    "num_blocks": 2,
-    "blocks": [
-      {
-        "index": 1,
-        "signature": 1,
-        "x": 150,
-        "y": 100,
-        "width": 30,
-        "height": 25
-      },
-      {
-        "index": 2,
-        "signature": 2,
-        "x": 280,
-        "y": 80,
-        "width": 25,
-        "height": 20
-      }
-    ]
-  }
-]
+1. Install MongoDB
+2. Update connection string in `back-end/app.py`:
+```python
+client = MongoClient("mongodb://localhost:27017/")
 ```
 
----
+### Network Configuration
 
-## 🛠️ Troubleshooting
+Update these URLs for your environment:
 
-1. **Permission denied errors** – Run with `sudo` to access USB devices.
-2. **Camera not detected** – Check USB connections and ensure `libpixyusb2` is installed.
-3. **HTTP errors** – Verify backend URL and network connectivity.
-4. **No blocks detected** – Adjust camera positioning and lighting.
-
----
-
-## 🔒 Security Note
-
-Currently SSL certificate verification is disabled for simplicity:
-
+**In C++ application:**
 ```cpp
-curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+const char* backend_url = "your-server-ip:5012/json_0";
 ```
 
-➡️ For production, enable proper certificate validation.
+**In Flutter frontend:**
+```dart
+// Update base URLs in service files
+const String PIXY_API_BASE = "http://your-server-ip:5012";
+```
+
+## 🎮 Usage Instructions
+
+### Block Detection and Tracking
+
+1. **Position cameras** to cover the target area
+2. **Configure signatures** in Pixy2 for your LEGO colors
+3. **Launch the system** following the startup sequence
+4. **View detected blocks** in the Flutter interface
+5. **Register blocks** by capturing them in the system
+6. **Track movement** using the predictive tracking algorithm
+
+### Image Processing
+
+1. Send PPM images to `/upload` endpoint
+2. Access processed images at `/latest.png?folder=clean`
+3. View original images at `/latest.png?folder=regular`
+
+### Data Management
+
+1. View all detections: `GET /detections`
+2. Query by ID: `GET /detections/by-custom-id/<id>`
+3. Monitor real-time data: `GET /get_json_0` or `/get_json_1`
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Camera not detected**
+   - Check USB connections
+   - Run with `sudo` for device access
+   - Verify libpixyusb2 installation
+
+2. **HTTP connection errors**
+   - Verify backend URL configuration
+   - Check firewall settings
+   - Confirm backend is running
+
+3. **Image processing failures**
+   - Verify OpenCV and Pillow installation
+   - Check directory permissions for image storage
+
+4. **MongoDB connection issues**
+   - Confirm MongoDB service is running
+   - Check connection string format
+
+### Debug Mode
+
+Enable debug output in each component:
+
+**C++ Application:** Compile with `-DDEBUG` flag
+
+**Flask Backend:** 
+```python
+app.run(host="0.0.0.0", port=5012, debug=True)
+```
+
+**Flutter Frontend:** 
+```bash
+flutter run --debug
+```
+
+## 🔒 Security Considerations
+
+1. **Add authentication** to API endpoints for production use
+2. **Enable HTTPS** for all communications
+3. **Implement input validation** on all endpoints
+4. **Add rate limiting** to prevent abuse
+5. **Secure MongoDB** with authentication and access controls
+
+## 📈 Performance Optimization
+
+### For High Throughput:
+
+1. **C++ Application:**
+   - Adjust frame processing rate
+   - Optimize JSON serialization
+   - Implement connection pooling
+
+2. **Flask Backend:**
+   - Use production WSGI server (Gunicorn)
+   - Implement database connection pooling
+   - Add caching for frequently accessed data
+
+3. **Flutter Frontend:**
+   - Optimize widget rebuilds
+   - Implement efficient grid rendering
+   - Use isolates for heavy computations
+
+## 🤝 Contributing
+
+1. Follow the established architecture patterns
+2. Maintain consistent code style
+3. Add tests for new functionality
+4. Update documentation for changes
+5. Test across all system components
+
+## 📄 License
+
+This project uses multiple open-source components with their respective licenses:
+- libpixyusb2 (Pixy2 SDK)
+- RapidJSON (MIT License)
+- libcurl (MIT License)
+- Flask (BSD License)
+- Flutter (BSD License)
+
+Please ensure compliance with all applicable licenses.
+
+## 🆘 Support
+
+For issues with:
+
+- **Pixy2 hardware**: Contact Charmed Labs
+- **C++ detection application**: Check issues in pixy_cpp
+- **Backend API**: Check issues in back-end
+- **Frontend application**: Check issues in front-end
+
+## 🚀 Future Enhancements
+
+1. Machine learning for improved block recognition
+2. 3D position tracking with multiple cameras
+3. Advanced blockchain integration
+4. Mobile app for remote monitoring
+5. Automated calibration system
+6. Multi-language support
+7. Plugin architecture for extensions
 
 ---
 
-## 📜 License
-
-This project uses libraries with their respective licenses:
-
-* `libpixyusb2` (Pixy2 SDK).
-* `RapidJSON` (MIT License).
-* `libcurl` (MIT License).
-
----
-
-## 💬 Support
-
-* **Pixy2 hardware issues** → [Charmed Labs](https://pixycam.com/).
-* **This software** → Use the repository’s Issues page.
-
----
-
-⚡Would you like me to also draft a **sample `main.cpp` skeleton** with the dual camera detection loop, JSON building, and cURL POST already wired up — so this README maps directly to runnable code?
+*This system is part of the BrickMMO project - building the future of interactive LEGO-based environments.*
 
