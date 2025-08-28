@@ -1,0 +1,113 @@
+[
+    {
+        "username": "admin",
+        "role": "admin",
+        "wallet": "",
+        "pin": "4588"
+    },
+    {
+        "username": "nahid",
+        "role": "user",
+        "wallet": "db0b76ca5c2373950be65b2d6006128d7cd4d6a0",
+        "privateKey": "bcedf4a15b91489654efc9418e1bdd6ab459e6bd7cfb40a4d742a88aecb7faa6",
+        "pin": "1234"
+    },
+    {
+        "username": "test",
+        "role": "user",
+        "wallet": "71dc7964f122a90d3b4e6dc045aa97ac896685f5",
+        "privateKey": "de8f0568adbea741ca35de7292ca3b1ef5fa565001f8e99620dbd21ed7c13039",
+        "pin": "1234"
+    },
+    {
+        "username": "new",
+        "role": "user",
+        "wallet": "610ead74f35d74cc046b2995a47bbe92bc811964",
+        "privateKey": "5da832183bebbe5d640d99a1579711301fad0822ded990858c80282800cee0cd",
+        "pin": "1234"
+    },
+    {
+        "username": "robo",
+        "role": "user",
+        "wallet": "79655357f31bdd6ab40227cf74b702d77c59f828",
+        "privateKey": "118ee03a727cc91fe5482a0179f4a86bc14035e2f085806970abf5a9337c1987",
+        "pin": "1234"
+    },
+    {
+        "username": "sekander",
+        "role": "user",
+        "wallet": "8b5434bb2722f9e954821dacd4a85b7eb21511d1",
+        "privateKey": "24f65392c0bf514207eed57c06fc0727087f99b7f4a75bb2accc2c87623e25f6",
+        "pin": "1234"
+    },
+    {
+        "username": "newUser",
+        "role": "user",
+        "wallet": "0d33dac866f0b32b89057c3a874ca028ca3119dc",
+        "privateKey": "bd92ec41800e8308061cde89cecec8c7640b4ff5e7527521ee6bfa595acbde65",
+        "pin": "1234"
+    },
+    {
+        "username": "testing",
+        "role": "user",
+        "wallet": "db2efe3793aacdfd5b6ed5dfea1b23f3d5997560",
+        "privateKey": "24059a5f27542fd1566eb1d6207b644d0fac0627474addf2fc517e88c6054526",
+        "pin": "1234"
+    },
+    {
+        "username": "newstuff",
+        "role": "user",
+        "wallet": "f5e0c3689cf00f11b7043d7f14a80e5d775cd228",
+        "privateKey": "351f1822a9e5aa814788a0e9fc6c47dc68f12d1f50d0378caafc416f47672e7f",
+        "pin": "1234"
+    },
+    {
+        "username": "testuser1",
+        "role": "user",
+        "wallet": "abc123wallet",
+        "privateKey": "privateKeyExample",
+        "pin": "1234"
+    },
+    {
+        "username": "final",
+        "role": "user",
+        "wallet": "6aea6cdfbf1c70114b5ce96cc8e42e33130efc21",
+        "privateKey": "b41fab2b980d86b39bd874e42c8f9aa676a2daab8723fd831ae03df5a4b90d08",
+        "pin": "1234"
+    },
+    {
+        "username": "test1234",
+        "role": "user",
+        "wallet": "bf4782707d10f0f2bde334e98193c07752f8e0e0",
+        "privateKey": "9c64c7370b869d1c9ec8ae06e060c2d382eed155fe10ced496301b302e113e80",
+        "pin": "1234"
+    },
+    {
+        "username": "my_unique_user_1753197390",
+        "role": "user",
+        "wallet": "8c038a92d66d89037636210f7e746c1a092a1cd6",
+        "privateKey": "aa5e57d221041c83da7fb8791a20e0f7407a5a14dee4a5c38ded4a98f0f6e422",
+        "pin": "4321"
+    },
+    {
+        "username": "my_unique_user_1753197589",
+        "role": "user",
+        "wallet": "ba2b2e58faf8e8cf1de011f0d74a7ad123363777",
+        "privateKey": "cf05802982585078fe7e123f9d258fee26d4b81caec18be7704206b42f9d0fce",
+        "pin": "4321"
+    },
+    {
+        "username": "my_unique_user_1753478706",
+        "role": "user",
+        "wallet": "15d24c0cf58fc9f8d035af51ae3fc3d2d4098711",
+        "privateKey": "a3379fa9891737104b4b7e4d612891f2e5ef62141ede32241e3313b601f48f43",
+        "pin": "4321"
+    },
+    {
+        "username": "my_unique_user_1753478715",
+        "role": "user",
+        "wallet": "6d00d299aa91e6b464650898769a5be318f604de",
+        "privateKey": "6f648d824b75d9568535062a7fab65c4714a402000daba420617dd8a18d8ffad",
+        "pin": "4321"
+    }
+]

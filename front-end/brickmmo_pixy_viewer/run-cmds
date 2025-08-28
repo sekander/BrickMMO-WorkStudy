@@ -1,0 +1,11 @@
+CHROME_EXECUTABLE=/usr/bin/chromium flutter run -d chrome
+
+flutter build web --release
+
+
+flutter run -d web-server --web-port=8085
+
+
+
+flutter run -d web-server --web-port=8085 --web-hostname=0.0.0.0
+
