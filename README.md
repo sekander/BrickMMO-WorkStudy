@@ -27,6 +27,8 @@ Crypto Layer:      [PHP Wallet + Blockchain] ←→ [Flask + Flutter APIs]
 Presentation:      [Flutter Web/Mobile App] → Users
 ```
 
+![Architecture Diagram](images/DFD.png)
+
 ---
 
 ## 🚀 Quick Start
