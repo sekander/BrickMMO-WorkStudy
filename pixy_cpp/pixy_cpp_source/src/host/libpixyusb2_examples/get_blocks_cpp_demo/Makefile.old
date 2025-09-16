@@ -3,9 +3,10 @@ CPPFLAGS=-g -fpermissive -I/usr/include/libusb-1.0 -I../../libpixyusb2/include -
 LDLIBS=../../../../build/libpixyusb2/libpixy2.a -lusb-1.0 -lcurl -lpthread
 
 SRCS=capture-json-cam.cpp
+
 OBJS=$(subst .cpp,.o,$(SRCS))
 
-all: get_blocks
+all: capture-json-cam 
 
 clean:
 	rm -f *.o capture-json-cam 

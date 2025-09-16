@@ -1,309 +1,130 @@
-# BrickMMO Pixy Vision System
+# BrickMMO WorkStudy - Pixy2 Camera Tracking System
 
-A comprehensive computer vision system for detecting and tracking LEGO blocks using Pixy2 cameras, with a full-stack implementation including C++ detection, Flask backend, and Flutter frontend.
+## Navigation Guide
 
-## 📋 System Overview
-
-This system provides real-time LEGO block detection, tracking, and visualization for the BrickMMO ecosystem. It consists of three main components:
-
-1. **C++ Pixy2 Detection Application** - Camera interface and block detection
-2. **Flask Backend API** - Data processing, storage, and image handling
-3. **Flutter Frontend** - Real-time visualization and user interface
-
-## 🏗️ Architecture
+The project root is `BrikMMo-WorkStudy`. Here's how to navigate to the relevant files:
 
 ```
-Physical Layer:    [Pixy2 Cameras] → USB → [Computer]
-Detection Layer:   [C++ Application] → HTTP → [Flask Backend]
-Data Layer:        [MongoDB] ←→ [Flask Backend] ←→ [Flutter Frontend]
-Presentation:      [Flutter Web/Mobile App] → Users
+BrikMMo-WorkStudy/
+└── pixy_cpp/
+    └── pixy_cpp_source/
+        └── src/
+            └── host/
+                └── libpixyusb2_examples/
+                    └── get_blocks_cpp_demo/
+                        ├── capture-json-cam.cpp    # Single-threaded version
+                        ├── multi-thread-cam.cpp    # Multi-threaded version
+                        └── Makefile               # Build configuration
 ```
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Ubuntu/Linux system
-- Python 3.7+
-- Flutter SDK
-- MongoDB
-- Pixy2 cameras
-
-### Installation Steps
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd BrickMMO-WorkStudy
-   ```
-
-2. **Set up the C++ detection application**
-   ```bash
-   cd pixy_cpp
-   sudo apt-get install libcurl4-openssl-dev rapidjson-dev
-   ./install_pixy_dependencies.sh
-   g++ -o pixy_detector main.cpp -lpixy2 -lcurl -std=c++11
-   ```
-
-3. **Set up the Flask backend**
-   ```bash
-   cd ../back-end
-   pip install -r requirements.txt
-   mkdir -p static/converted_imagesi/regular static/converted_imagesi/clean
-   ```
-
-4. **Set up the Flutter frontend**
-   ```bash
-   cd ../front-end
-   flutter pub get
-   ```
-
-5. **Configure environment**
-   - Update backend URL in `pixy_cpp/main.cpp`
-   - Configure MongoDB connection in `back-end/app.py`
-   - Set API endpoints in `front-end/lib/services/`
-
-### Running the System
-
-1. **Start MongoDB**
-   ```bash
-   sudo systemctl start mongod
-   ```
-
-2. **Launch the backend**
-   ```bash
-   cd back-end
-   python app.py
-   ```
-
-3. **Run the detection application**
-   ```bash
-   cd pixy_cpp
-   sudo ./pixy_detector
-   ```
-
-4. **Start the frontend**
-   ```bash
-   cd front-end
-   flutter run
-   ```
-
-## 📊 Component Details
-
-### C++ Pixy Detection Application
-
-**Features:**
-- Dual camera support with simultaneous processing
-- Real-time color signature detection
-- Configurable filtering by position and size
-- JSON data formatting with coordinate adjustment
-- HTTP POST integration to backend
-
-**Key Configuration:**
-```cpp
-// Camera parameters
-get_blocks_custom(pixy, "PC-CAMERA 1: ", 0, 207, 0, 0, jsonOutput);
-
-// Backend URL
-const char* backend_url = "192.168.2.87:5012/json_0";
-```
-
-### Flask Backend API
-
-**Endpoints:**
-- `POST /json_0`, `/json_1` - Receive detection data from cameras
-- `GET /get_json_0`, `/get_json_1` - Retrieve processed data
-- `POST /insert_detection` - Store new detections
-- `POST /update_tracking` - Update block positions
-- `POST /upload` - Process PPM images
-- `GET /latest.png` - Serve processed images
-
-**Data Processing:**
-- Fisheye distortion correction
-- Coordinate transformation
-- MongoDB storage with timestamps
-- Image conversion (PPM to PNG)
-
-### Flutter Frontend
-
-**Features:**
-- Real-time block visualization on city grid
-- Interactive block tracking and registration
-- Multi-camera support with signature filtering
-- Cryptocurrency integration for block transactions
-- Responsive design for desktop and mobile
-
-**Architecture:**
-- Service-based design with separate modules for:
-  - Block tracking and prediction
-  - Camera communication
-  - Cryptocurrency operations
-  - Map data handling
-
-## 🔧 Configuration Guide
-
-### Camera Calibration
-
-Adjust these parameters in `back-end/app.py`:
-```python
-# Camera matrix parameters
-w = 316  # Frame width
-h = 208  # Frame height
-centre = (w // 2, h // 2)
-
-# Distortion coefficients (adjust for your camera)
-dist_coeffs = np.array([-0.2, 0.1, 0, 0], dtype=np.float32)
-```
-
-### MongoDB Setup
-
-1. Install MongoDB
-2. Update connection string in `back-end/app.py`:
-```python
-client = MongoClient("mongodb://localhost:27017/")
-```
-
-### Network Configuration
-
-Update these URLs for your environment:
-
-**In C++ application:**
-```cpp
-const char* backend_url = "your-server-ip:5012/json_0";
-```
-
-**In Flutter frontend:**
-```dart
-// Update base URLs in service files
-const String PIXY_API_BASE = "http://your-server-ip:5012";
-```
-
-## 🎮 Usage Instructions
-
-### Block Detection and Tracking
-
-1. **Position cameras** to cover the target area
-2. **Configure signatures** in Pixy2 for your LEGO colors
-3. **Launch the system** following the startup sequence
-4. **View detected blocks** in the Flutter interface
-5. **Register blocks** by capturing them in the system
-6. **Track movement** using the predictive tracking algorithm
-
-### Image Processing
-
-1. Send PPM images to `/upload` endpoint
-2. Access processed images at `/latest.png?folder=clean`
-3. View original images at `/latest.png?folder=regular`
-
-### Data Management
-
-1. View all detections: `GET /detections`
-2. Query by ID: `GET /detections/by-custom-id/<id>`
-3. Monitor real-time data: `GET /get_json_0` or `/get_json_1`
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Camera not detected**
-   - Check USB connections
-   - Run with `sudo` for device access
-   - Verify libpixyusb2 installation
-
-2. **HTTP connection errors**
-   - Verify backend URL configuration
-   - Check firewall settings
-   - Confirm backend is running
-
-3. **Image processing failures**
-   - Verify OpenCV and Pillow installation
-   - Check directory permissions for image storage
-
-4. **MongoDB connection issues**
-   - Confirm MongoDB service is running
-   - Check connection string format
-
-### Debug Mode
-
-Enable debug output in each component:
-
-**C++ Application:** Compile with `-DDEBUG` flag
-
-**Flask Backend:** 
-```python
-app.run(host="0.0.0.0", port=5012, debug=True)
-```
-
-**Flutter Frontend:** 
+From the terminal, navigate to:
 ```bash
-flutter run --debug
+cd ~/C0de/GIT/BrickMMo-WorkStudy/pixy_cpp/pixy_cpp_source/src/host/libpixyusb2_examples/get_blocks_cpp_demo
 ```
 
-## 🔒 Security Considerations
+## Makefile Usage and Modification
 
-1. **Add authentication** to API endpoints for production use
-2. **Enable HTTPS** for all communications
-3. **Implement input validation** on all endpoints
-4. **Add rate limiting** to prevent abuse
-5. **Secure MongoDB** with authentication and access controls
+### Building the Project:
+```bash
+make clean    # Clean previous builds
+make          # Build the project
+```
 
-## 📈 Performance Optimization
+### Modifying the Makefile:
 
-### For High Throughput:
+1. **Change source file** (default: capture-json-cam.cpp):
+   ```makefile
+   SRCS=multi-thread-cam.cpp  # Switch to multi-threaded version
+   ```
 
-1. **C++ Application:**
-   - Adjust frame processing rate
-   - Optimize JSON serialization
-   - Implement connection pooling
+2. **Change output executable name**:
+   ```makefile
+   # Change the target name
+   get_blocks: $(OBJS)
+       $(CXX) $(LDFLAGS) -o camera-tracker $(OBJS) $(LDLIBS)  # New name
+   ```
 
-2. **Flask Backend:**
-   - Use production WSGI server (Gunicorn)
-   - Implement database connection pooling
-   - Add caching for frequently accessed data
+3. **Add include paths**:
+   ```makefile
+   CPPFLAGS=-g -fpermissive -I/usr/include/libusb-1.0 -I../../libpixyusb2/include -I../../arduino/libraries/Pixy2 -I/new/include/path
+   ```
 
-3. **Flutter Frontend:**
-   - Optimize widget rebuilds
-   - Implement efficient grid rendering
-   - Use isolates for heavy computations
+4. **Add libraries**:
+   ```makefile
+   LDLIBS=../../../../build/libpixyusb2/libpixy2.a -lusb-1.0 -lcurl -lpthread -lnewlib
+   ```
 
-## 🤝 Contributing
+5. **Build for different source files**:
+   ```bash
+   make SRCS=multi-thread-cam.cpp  # Build specific file without editing Makefile
+   ```
 
-1. Follow the established architecture patterns
-2. Maintain consistent code style
-3. Add tests for new functionality
-4. Update documentation for changes
-5. Test across all system components
+## Code Explanation: capture-json-cam.cpp
 
-## 📄 License
+### Overview
+Single-threaded application that connects to Pixy2 cameras, detects colored objects, and sends JSON data to a backend server.
 
-This project uses multiple open-source components with their respective licenses:
-- libpixyusb2 (Pixy2 SDK)
-- RapidJSON (MIT License)
-- libcurl (MIT License)
-- Flask (BSD License)
-- Flutter (BSD License)
+### Key Functionality:
+1. **Initialization**: Connects to one or two Pixy2 cameras with error handling
+2. **Object Detection**: Uses color connected components algorithm to detect objects
+3. **Data Processing**: Filters objects by Y-position and applies camera-specific coordinate offsets
+4. **JSON Formatting**: Uses RapidJSON to create structured data payloads
+5. **HTTP Transmission**: Sends data to backend server using libcurl
 
-Please ensure compliance with all applicable licenses.
+### Workflow:
+1. Initialize cameras and check connections
+2. Enter continuous loop:
+   - Query both cameras for detected blocks
+   - Filter and process the data
+   - Format into JSON structure
+   - Send to backend via HTTP POST
+   - Repeat until interrupted
 
-## 🆘 Support
+### Key Features:
+- Graceful shutdown handling (CTRL+C support)
+- Configurable backend URL
+- Camera-specific coordinate adjustments
+- Error handling for camera connections
 
-For issues with:
+## Code Explanation: multi-thread-cam.cpp
 
-- **Pixy2 hardware**: Contact Charmed Labs
-- **C++ detection application**: Check issues in pixy_cpp
-- **Backend API**: Check issues in back-end
-- **Frontend application**: Check issues in front-end
+### Overview
+Enhanced multi-threaded version that parallelizes camera operations for improved performance.
 
-## 🚀 Future Enhancements
+### Key Enhancements Over Single-Threaded Version:
+1. **Parallel Processing**: Uses separate threads for:
+   - Data transmission to backend
+   - Frame capture from each camera
+   - Image processing and saving
 
-1. Machine learning for improved block recognition
-2. 3D position tracking with multiple cameras
-3. Advanced blockchain integration
-4. Mobile app for remote monitoring
-5. Automated calibration system
-6. Multi-language support
-7. Plugin architecture for extensions
+2. **Additional Functionality**:
+   - Raw frame capture and demosaicing
+   - PPM image file saving
+   - Support for up to 4 cameras
+   - Better resource management
 
----
+### Thread Structure:
+1. **Transmit Thread**: Handles JSON data creation and HTTP transmission
+2. **Frame Capture Threads**: Each camera has a dedicated thread for image capture
+3. **Main Thread**: Manages overall application flow and thread coordination
 
-*This system is part of the BrickMMO project - building the future of interactive LEGO-based environments.*
+### Advanced Features:
+- Frame counter for sequential image saving
+- Bayer to RGB conversion (demosaicing)
+- Configurable frame capture intervals
+- Dynamic camera activation tracking
+- Better error handling for frame capture
 
+### Workflow:
+1. Initialize all available cameras
+2. Launch parallel threads for different tasks
+3. Coordinate data sharing between threads
+4. Clean shutdown with proper thread termination
+
+### Performance Benefits:
+- Non-blocking operations: HTTP transmission doesn't delay frame capture
+- Better CPU utilization across multiple cores
+- Higher throughput for multi-camera setups
+- Responsive control even during heavy processing
+
+Both versions serve the same core purpose but the multi-threaded version offers significantly better performance for production environments with multiple cameras or high data volume requirements.
